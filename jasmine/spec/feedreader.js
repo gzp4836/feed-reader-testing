@@ -21,15 +21,32 @@ $(function () {
             expect(allFeeds.length).not.toBe(0);
         });
 
+        /* 遍历判断allFeeds属性
+         * 当不传递regular值，判断属性值是否存在
+         * 当传regular时，判断属性值是否符合正则表达式regular
+         * 返回true,false
+         */
+        function isAviliable(key, regular) {
+            if (!key || !allFeeds) { return false; }
+            for (var i = 0; i < allFeeds.length; i++) {
+                if (!allFeeds[i][key]) { return false; }
+                if (regular && !(regular).test(allFeeds[i][key])) {
+                    return false;
+                }
+                if (!regular && allFeeds[i][key].length == 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
 
         /* TODO:
          * 编写一个测试遍历 allFeeds 对象里面的所有的源来保证有链接字段而且链接不是空的。
          */
         it('all urls are defined', function () {
-            for (var i = 0; i < allFeeds.length; i++) {
-                expect(allFeeds[i].url).toBeDefined();
-                expect(allFeeds[i].url).not.toBe('');
-            }
+            var regularExpressionUrl = /^((ht|f)tps?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?/;
+            expect(isAviliable("url", regularExpressionUrl)).toBeTruthy();
         });
 
 
@@ -37,10 +54,7 @@ $(function () {
          * 编写一个测试遍历 allFeeds 对象里面的所有的源来保证有名字字段而且不是空的。
          */
         it('all name are defined', function () {
-            for (var i = 0; i < allFeeds.length; i++) {
-                expect(allFeeds[i].name).toBeDefined();
-                expect(allFeeds[i].name).not.toBe('');
-            }
+            expect(isAviliable("name")).toBeTruthy();
         });
     });
 
@@ -53,7 +67,9 @@ $(function () {
         */
         it('menu is hide', function () {
             // body有menu-hidden样式时候，menu是隐藏的
-            expect(document.body.className).toBe('menu-hidden');
+            // 这块开始想用正则做，没研究好，如果你知道帮写在这里
+            // expect($(document.body).hasClass('menu-hidden')).toBeTruthy();
+            expect(document.body.className.indexOf('menu-hidden')).not.toBe(-1);
         });
         /* TODO:
         * 写一个测试用例保证当菜单图标被点击的时候菜单会切换可见状态。这个
@@ -66,10 +82,10 @@ $(function () {
             expect(menuIcon).toBeDefined();
             // menuIcon 点击触发,无隐藏样式
             menuIcon.click();
-            expect(document.body.className).toBe('');
+            expect(document.body.className.indexOf('menu-hidden')).toBe(-1);
             // menuIcon 二次触发，有隐藏样式menu-hidden
             menuIcon.click();
-            expect(document.body.className).toBe('menu-hidden');
+            expect(document.body.className.indexOf('menu-hidden')).not.toBe(-1);
         });
     });
 
@@ -83,8 +99,8 @@ $(function () {
         * 和异步的 done() 函数。
         */
         // 异步行数loadFeed被调用后执行done
-        beforeEach(function(done){
-            loadFeed(0,done);
+        beforeEach(function (done) {
+            loadFeed(0, done);
         });
         it('loadFeed is working', function (done) {
             // 获取dom结构中文章内容的条目是否有数据
@@ -107,15 +123,15 @@ $(function () {
         * 记住，loadFeed() 函数是异步的。
         */
         // 缓存前后两个源的html结构内容
-        var templ0,templ1;
-        beforeEach(function(done){
+        var templ0, templ1;
+        beforeEach(function (done) {
             var node = document.getElementsByClassName('feed')[0];
             // node 节点被定义
             expect(node).toBeDefined();
-            loadFeed(0,function(){
+            loadFeed(0, function () {
                 // 第一个源的html结构，缓存下来
                 templ0 = node.innerHTML;
-                loadFeed(1,function(){
+                loadFeed(1, function () {
                     // 再次请求第二个源的html结构缓存
                     templ1 = node.innerHTML;
                     done();
